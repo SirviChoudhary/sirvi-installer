@@ -1,0 +1,10 @@
+{
+  "name": "sirvi/installer",
+  "description": "Sirvi Framework Installer",
+  "require": {
+    "php": ">=8.0"
+  },
+  "bin": [
+    "bin/sirvi"
+  ]
+}
