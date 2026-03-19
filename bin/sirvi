@@ -4,6 +4,22 @@
 $command = $argv[1] ?? null;
 $name = $argv[2] ?? null;
 
+// ==============================
+// DELETE FOLDER (RECURSIVE)
+// ==============================
+function deleteFolder($folder) {
+    if (!is_dir($folder)) return;
+
+    $files = scandir($folder);
+    foreach ($files as $file) {
+        if ($file != '.' && $file != '..') {
+            $path = "$folder/$file";
+            is_dir($path) ? deleteFolder($path) : unlink($path);
+        }
+    }
+    rmdir($folder);
+}
+
 switch ($command) {
 
     // ==============================
@@ -32,23 +48,32 @@ switch ($command) {
             exit;
         }
 
-        // Step 2: Create project folder
+        // Step 2: Source path (files folder)
+        $source = $temp . "/files";
+
+        if (!is_dir($source)) {
+            echo "❌ 'files' folder not found in repo!\n";
+            deleteFolder($temp);
+            exit;
+        }
+
+        // Step 3: Create project folder
         mkdir($name);
 
-        // Step 3: Move files (skip .git)
-        $files = scandir($temp);
+        // Step 4: Move only files inside /files
+        $files = scandir($source);
         foreach ($files as $file) {
-            if ($file != '.' && $file != '..' && $file != '.git') {
-                rename("$temp/$file", "$name/$file");
+            if ($file != '.' && $file != '..') {
+                rename("$source/$file", "$name/$file");
             }
         }
 
-        // Step 4: Remove temp folder
-        rmdir($temp);
+        // Step 5: Delete temp folder
+        deleteFolder($temp);
 
         echo "📦 Installing dependencies (composer install)...\n";
 
-        // Step 5: Run composer install
+        // Step 6: Run composer install
         chdir($name);
         system("composer install");
 
