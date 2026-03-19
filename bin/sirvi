@@ -8,52 +8,79 @@ switch ($command) {
 
     case "new":
         if (!$name) {
-            echo "Please provide project name\n";
+            echo "❌ Please provide project name\n";
             exit;
         }
 
-        echo "Downloading Sirvi Framework...\n";
+        if (file_exists($name)) {
+            echo "❌ Folder already exists!\n";
+            exit;
+        }
+
+        echo "📥 Downloading Sirvi Framework...\n";
+
         system("git clone https://github.com/SirviChoudhary/sirvi-framework $name");
-        echo "Project installed successfully!\n";
+
+        if (!is_dir($name)) {
+            echo "❌ Installation failed!\n";
+            exit;
+        }
+
+        echo "✅ Project '$name' installed successfully!\n";
         break;
 
     case "serve":
-        echo "Server running at http://localhost:8000\n";
+        echo "🚀 Server running at http://localhost:8000\n";
         passthru("php -S localhost:8000 -t public");
         break;
 
     case "make:controller":
         $file = "app/Controllers/$name.php";
+        @mkdir("app/Controllers", 0777, true);
+
         $content = "<?php\n\nclass $name {\n\n}\n";
         file_put_contents($file, $content);
-        echo "Controller created: $file\n";
+
+        echo "✅ Controller created: $file\n";
         break;
 
     case "make:model":
         $file = "app/Models/$name.php";
+        @mkdir("app/Models", 0777, true);
+
         $content = "<?php\n\nclass $name {\n\n}\n";
         file_put_contents($file, $content);
-        echo "Model created: $file\n";
+
+        echo "✅ Model created: $file\n";
         break;
 
     case "make:middleware":
         $file = "app/Middleware/$name.php";
+        @mkdir("app/Middleware", 0777, true);
+
         $content = "<?php\n\nclass $name {\n\n}\n";
         file_put_contents($file, $content);
-        echo "Middleware created: $file\n";
+
+        echo "✅ Middleware created: $file\n";
         break;
 
     case "make:migration":
         $time = date("Y_m_d_His");
+
+        @mkdir("database/migrations", 0777, true);
+
         $file = "database/migrations/{$time}_$name.php";
+
         $content = "<?php\n\nclass $name {\n\n}\n";
+
         file_put_contents($file, $content);
-        echo "Migration created: $file\n";
+
+        echo "✅ Migration created: $file\n";
         break;
 
     default:
-        echo "Sirvi CLI\n";
-        echo "Commands:\n";
+        echo "\nSirvi CLI\n";
+        echo "-------------------------\n";
         echo "sirvi new ProjectName\n";
         echo "sirvi serve\n";
         echo "sirvi make:controller Name\n";
