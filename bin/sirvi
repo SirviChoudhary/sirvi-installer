@@ -6,7 +6,11 @@ $name = $argv[2] ?? null;
 
 switch ($command) {
 
+    // ==============================
+    // CREATE NEW PROJECT
+    // ==============================
     case "new":
+
         if (!$name) {
             echo "❌ Please provide project name\n";
             exit;
@@ -19,67 +23,141 @@ switch ($command) {
 
         echo "📥 Downloading Sirvi Framework...\n";
 
-        system("git clone https://github.com/SirviChoudhary/sirvi-framework $name");
+        // Step 1: Clone repo into temp folder
+        $temp = $name . "_temp";
+        system("git clone https://github.com/SirviChoudhary/sirvi-framework $temp");
 
-        if (!is_dir($name)) {
+        if (!is_dir($temp)) {
             echo "❌ Installation failed!\n";
             exit;
         }
 
+        // Step 2: Create project folder
+        mkdir($name);
+
+        // Step 3: Move files (skip .git)
+        $files = scandir($temp);
+        foreach ($files as $file) {
+            if ($file != '.' && $file != '..' && $file != '.git') {
+                rename("$temp/$file", "$name/$file");
+            }
+        }
+
+        // Step 4: Remove temp folder
+        rmdir($temp);
+
+        echo "📦 Installing dependencies (composer install)...\n";
+
+        // Step 5: Run composer install
+        chdir($name);
+        system("composer install");
+
         echo "✅ Project '$name' installed successfully!\n";
+        echo "👉 Run: cd $name && sirvi serve\n";
         break;
 
+
+    // ==============================
+    // START SERVER
+    // ==============================
     case "serve":
         echo "🚀 Server running at http://localhost:8000\n";
         passthru("php -S localhost:8000 -t public");
         break;
 
+
+    // ==============================
+    // MAKE CONTROLLER
+    // ==============================
     case "make:controller":
+
+        if (!$name) {
+            echo "❌ Provide controller name\n";
+            exit;
+        }
+
         $file = "app/Controllers/$name.php";
         @mkdir("app/Controllers", 0777, true);
 
-        $content = "<?php\n\nclass $name {\n\n}\n";
+        $content = "<?php\n\nclass $name {\n\n    public function index() {\n        echo 'Controller $name working';\n    }\n\n}\n";
+
         file_put_contents($file, $content);
 
         echo "✅ Controller created: $file\n";
         break;
 
+
+    // ==============================
+    // MAKE MODEL
+    // ==============================
     case "make:model":
+
+        if (!$name) {
+            echo "❌ Provide model name\n";
+            exit;
+        }
+
         $file = "app/Models/$name.php";
         @mkdir("app/Models", 0777, true);
 
         $content = "<?php\n\nclass $name {\n\n}\n";
+
         file_put_contents($file, $content);
 
         echo "✅ Model created: $file\n";
         break;
 
+
+    // ==============================
+    // MAKE MIDDLEWARE
+    // ==============================
     case "make:middleware":
+
+        if (!$name) {
+            echo "❌ Provide middleware name\n";
+            exit;
+        }
+
         $file = "app/Middleware/$name.php";
         @mkdir("app/Middleware", 0777, true);
 
-        $content = "<?php\n\nclass $name {\n\n}\n";
+        $content = "<?php\n\nclass $name {\n\n    public function handle() {\n        // middleware logic\n    }\n\n}\n";
+
         file_put_contents($file, $content);
 
         echo "✅ Middleware created: $file\n";
         break;
 
+
+    // ==============================
+    // MAKE MIGRATION
+    // ==============================
     case "make:migration":
+
+        if (!$name) {
+            echo "❌ Provide migration name\n";
+            exit;
+        }
+
         $time = date("Y_m_d_His");
 
         @mkdir("database/migrations", 0777, true);
 
         $file = "database/migrations/{$time}_$name.php";
 
-        $content = "<?php\n\nclass $name {\n\n}\n";
+        $content = "<?php\n\nclass $name {\n\n    public function up() {\n        // create table\n    }\n\n    public function down() {\n        // drop table\n    }\n\n}\n";
 
         file_put_contents($file, $content);
 
         echo "✅ Migration created: $file\n";
         break;
 
+
+    // ==============================
+    // DEFAULT HELP
+    // ==============================
     default:
-        echo "\nSirvi CLI\n";
+        echo "\n🔥 Sirvi CLI\n";
         echo "-------------------------\n";
         echo "sirvi new ProjectName\n";
         echo "sirvi serve\n";
